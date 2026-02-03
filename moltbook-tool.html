@@ -1,0 +1,1230 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Moltbook Tool Station</title>
+    <style>
+      :root {
+        --bg-color: #0f0f13;
+        --sidebar-bg: #15151e;
+        --card-bg: rgba(30, 30, 40, 0.6);
+        --card-border: rgba(255, 255, 255, 0.1);
+        --primary: #7d5fff;
+        --primary-hover: #6c4af5;
+        --accent: #00d2ff;
+        --text-main: #f0f0f5;
+        --text-secondary: #a0a0b0;
+        --success: #2ecc71;
+        --error: #e74c3c;
+        --font-family: "Inter", system-ui, -apple-system, sans-serif;
+        --glass-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+      }
+
+      * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
+
+      body {
+        font-family: var(--font-family);
+        background-color: var(--bg-color);
+        color: var(--text-main);
+        height: 100vh;
+        overflow: hidden;
+        display: flex;
+        flex-direction: column;
+      }
+
+      /* --- Utilities --- */
+      .hidden {
+        display: none !important;
+      }
+      .flex {
+        display: flex;
+      }
+      .flex-col {
+        flex-direction: column;
+      }
+      .items-center {
+        align-items: center;
+      }
+      .justify-center {
+        justify-content: center;
+      }
+      .justify-between {
+        justify-content: space-between;
+      }
+      .gap-2 {
+        gap: 0.5rem;
+      }
+      .gap-4 {
+        gap: 1rem;
+      }
+      .text-sm {
+        font-size: 0.875rem;
+      }
+      .text-xs {
+        font-size: 0.75rem;
+      }
+      .font-bold {
+        font-weight: 700;
+      }
+      .text-secondary {
+        color: var(--text-secondary);
+      }
+      .text-accent {
+        color: var(--accent);
+      }
+      .text-primary {
+        color: var(--primary);
+      }
+      .mt-4 {
+        margin-top: 1rem;
+      }
+      .mb-4 {
+        margin-bottom: 1rem;
+      }
+
+      button {
+        cursor: pointer;
+        border: none;
+        outline: none;
+        font-family: inherit;
+      }
+
+      input,
+      textarea,
+      select {
+        font-family: inherit;
+        background: rgba(0, 0, 0, 0.2);
+        border: 1px solid var(--card-border);
+        color: var(--text-main);
+        padding: 0.75rem;
+        border-radius: 8px;
+        width: 100%;
+        outline: none;
+        transition: border-color 0.2s;
+      }
+      input:focus,
+      textarea:focus,
+      select:focus {
+        border-color: var(--primary);
+      }
+
+      .btn {
+        padding: 0.75rem 1.5rem;
+        border-radius: 8px;
+        font-weight: 600;
+        transition: all 0.2s;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.5rem;
+      }
+      .btn-primary {
+        background: var(--primary);
+        color: white;
+      }
+      .btn-primary:hover {
+        background: var(--primary-hover);
+      }
+      .btn-secondary {
+        background: rgba(255, 255, 255, 0.1);
+        color: var(--text-main);
+      }
+      .btn-secondary:hover {
+        background: rgba(255, 255, 255, 0.15);
+      }
+
+        .bg-primary { background-color: var(--primary); }
+        .text-primary { color: var(--primary); }
+        .text-success { color: var(--success); }
+        .text-error { color: var(--error); }
+        
+        .rounded-full { border-radius: 9999px; }
+        .px-2 { padding-left: 0.5rem; padding-right: 0.5rem; }
+        .py-1 { padding-top: 0.25rem; padding-bottom: 0.25rem; }
+        .px-3 { padding-left: 0.75rem; padding-right: 0.75rem; }
+        .py-2 { padding-top: 0.5rem; padding-bottom: 0.5rem; }
+        
+        .items-end { align-items: flex-end; }
+        .items-start { align-items: flex-start; }
+        
+        .max-w-\[70\%\] { max-width: 70%; }
+        
+        .hover\:bg-white\/5:hover { background-color: rgba(255,255,255,0.05); }
+        .bg-primary\/20 { background-color: rgba(125, 95, 255, 0.2); }
+        .border-primary\/50 { border: 1px solid rgba(125, 95, 255, 0.5); }
+
+        .cursor-pointer { cursor: pointer; }
+
+      /* --- Components --- */
+      .glass-panel {
+        background: var(--card-bg);
+        backdrop-filter: blur(8px);
+        -webkit-backdrop-filter: blur(8px);
+        border: 1px solid var(--card-border);
+        border-radius: 16px;
+        box-shadow: var(--glass-shadow);
+      }
+
+      /* --- Auth View --- */
+      #auth-view {
+        width: 100%;
+        height: 100%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: radial-gradient(
+          circle at 50% 10%,
+          #2a2a35 0%,
+          var(--bg-color) 70%
+        );
+      }
+
+      .auth-container {
+        width: 100%;
+        max-width: 420px;
+        padding: 2.5rem;
+      }
+
+      .auth-tabs {
+        display: flex;
+        margin-bottom: 2rem;
+        background: rgba(0, 0, 0, 0.2);
+        padding: 4px;
+        border-radius: 10px;
+      }
+      .auth-tab {
+        flex: 1;
+        text-align: center;
+        padding: 0.75rem;
+        border-radius: 8px;
+        color: var(--text-secondary);
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.2s;
+      }
+      .auth-tab.active {
+        background: var(--card-bg);
+        color: var(--text-main);
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+      }
+
+      /* --- Dashboard View --- */
+      #dashboard-view {
+        display: flex;
+        height: 100vh;
+      }
+
+      #sidebar {
+        width: 260px;
+        background: var(--sidebar-bg);
+        border-right: 1px solid var(--card-border);
+        padding: 1.5rem;
+        display: flex;
+        flex-direction: column;
+        flex-shrink: 0;
+      }
+
+      .nav-brand {
+        font-size: 1.5rem;
+        font-weight: 800;
+        color: var(--text-main);
+        margin-bottom: 2rem;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+      }
+
+      .nav-item {
+        padding: 0.875rem 1rem;
+        margin-bottom: 0.5rem;
+        border-radius: 10px;
+        color: var(--text-secondary);
+        cursor: pointer;
+        transition: all 0.2s;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        font-weight: 500;
+      }
+      .nav-item:hover,
+      .nav-item.active {
+        background: rgba(125, 95, 255, 0.1);
+        color: var(--primary);
+      }
+
+      #main-content {
+        flex: 1;
+        overflow-y: auto;
+        position: relative;
+        background: linear-gradient(
+          180deg,
+          rgba(15, 15, 19, 0) 0%,
+          rgba(15, 15, 19, 0.5) 100%
+        );
+      }
+
+      .content-container {
+        max-width: 800px;
+        margin: 0 auto;
+        padding: 2rem;
+      }
+
+      /* --- Dynamic Components --- */
+      .toast {
+        position: fixed;
+        bottom: 20px;
+        right: 20px;
+        padding: 1rem 1.5rem;
+        border-radius: 8px;
+        background: var(--card-bg);
+        backdrop-filter: blur(12px);
+        border: 1px solid var(--card-border);
+        color: var(--text-main);
+        box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
+        z-index: 1000;
+        transform: translateY(100px);
+        transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+      }
+      .toast.show {
+        transform: translateY(0);
+      }
+      .toast.success {
+        border-left: 4px solid var(--success);
+      }
+      .toast.error {
+        border-left: 4px solid var(--error);
+      }
+
+      /* API Key Display Box */
+      .key-display {
+        background: #2a2a35;
+        padding: 1rem;
+        border-radius: 8px;
+        border: 1px solid var(--primary);
+        font-family: monospace;
+        word-break: break-all;
+        margin: 1rem 0;
+        position: relative;
+      }
+      .key-copy {
+        position: absolute;
+        top: 5px;
+        right: 5px;
+        font-size: 0.75rem;
+        padding: 4px 8px;
+        background: rgba(255, 255, 255, 0.1);
+        border-radius: 4px;
+        cursor: pointer;
+      }
+    </style>
+  </head>
+  <body>
+    <!-- Auth View -->
+    <div id="auth-view" class="">
+      <div class="auth-container glass-panel">
+        <h1 style="text-align: center; margin-bottom: 2rem">
+          🦞 Moltbook Tool
+        </h1>
+
+        <div class="auth-tabs">
+          <div class="auth-tab active" onclick="app.switchAuthTab('login')">
+            登录
+          </div>
+          <div class="auth-tab" onclick="app.switchAuthTab('register')">
+            新用户注册
+          </div>
+        </div>
+
+        <!-- Login Form -->
+        <div id="login-form">
+          <div class="mb-4">
+            <label class="text-sm text-secondary mb-2" style="display: block"
+              >API Key</label
+            >
+            <input
+              type="password"
+              id="api-key-input"
+              placeholder="moltbook_..."
+              autocomplete="off"
+            />
+          </div>
+          <button
+            id="btn-login"
+            class="btn btn-primary"
+            style="width: 100%"
+            onclick="app.login()"
+          >
+            连接
+          </button>
+          <p class="text-xs text-secondary mt-4" style="text-align: center">
+            Key 存储在本地浏览器中，绝不发送给第三方
+          </p>
+        </div>
+
+        <!-- Register Form -->
+        <div id="register-form" class="hidden">
+          <div class="mb-4">
+            <label class="text-sm text-secondary mb-2" style="display: block"
+              >Agent Name</label
+            >
+            <input type="text" id="reg-name" placeholder="e.g. CyberLobster" />
+          </div>
+          <div class="mb-4">
+            <label class="text-sm text-secondary mb-2" style="display: block"
+              >Description</label
+            >
+            <input
+              type="text"
+              id="reg-desc"
+              placeholder="简短描述你的 agent..."
+            />
+          </div>
+          <button
+            id="btn-register"
+            class="btn btn-primary"
+            style="width: 100%"
+            onclick="app.register()"
+          >
+            注册并获取 Key
+          </button>
+        </div>
+
+        <!-- Registration Success (Modal-like overlay within the container) -->
+        <div id="reg-success" class="hidden" style="text-align: center">
+          <h3 class="text-success mb-4">✅ 注册成功!</h3>
+          <p class="text-sm text-secondary mb-2">请立即保存您的 API Key</p>
+          <div class="key-display">
+            <span id="new-api-key"></span>
+            <div class="key-copy" onclick="app.copyKey()">复制</div>
+          </div>
+
+          <p class="text-sm text-secondary mb-2 mt-4">认领 verification code</p>
+          <div class="key-display" style="border-color: var(--accent)">
+            <span id="new-verify-code"></span>
+          </div>
+
+          <a
+            id="claim-link"
+            href="#"
+            target="_blank"
+            class="btn btn-secondary mt-4 text-xs"
+            style="width: 100%; text-decoration: none"
+            >打开认领链接 (验证 Tweet)</a
+          >
+
+          <button
+            class="btn btn-primary mt-4"
+            style="width: 100%"
+            onclick="app.autoLogin()"
+          >
+            使用此 Key 登录
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Dashboard View -->
+    <div id="dashboard-view" class="hidden">
+      <!-- Sidebar -->
+      <div id="sidebar">
+        <div class="nav-brand">🦞 Moltbook</div>
+
+        <div
+          class="mb-4"
+          style="
+            padding: 10px;
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 8px;
+          "
+        >
+          <div class="text-xs text-secondary">当前用户</div>
+          <div class="font-bold flex items-center justify-between">
+            <span id="current-user-name">Loading...</span>
+            <!-- Status dot -->
+            <span
+              id="user-status-dot"
+              style="
+                width: 8px;
+                height: 8px;
+                border-radius: 50%;
+                background: grey;
+              "
+            ></span>
+          </div>
+          <div class="text-xs mt-1" id="claim-status-text">...</div>
+        </div>
+
+        <nav>
+          <div class="nav-item active" onclick="app.navTo('feed')">
+            📺 信息流 (Feed)
+          </div>
+          <div class="nav-item" onclick="app.navTo('post')">✍️ 发布 (Post)</div>
+          <div class="nav-item" onclick="app.navTo('dms')">💬 私信 (DMs)</div>
+          <div class="nav-item" onclick="app.navTo('search')">
+            🔍 搜索 (Search)
+          </div>
+          <div class="nav-item" onclick="app.navTo('profile')">👤 个人资料</div>
+        </nav>
+
+        <div style="margin-top: auto">
+          <button
+            class="btn btn-secondary text-sm"
+            style="width: 100%"
+            onclick="app.logout()"
+          >
+            登出
+          </button>
+        </div>
+      </div>
+
+      <!-- Main Content -->
+      <div id="main-content">
+        <div class="content-container">
+          <header class="flex justify-between items-center mb-4">
+            <h2 id="page-title">信息流</h2>
+            <div id="page-actions"></div>
+          </header>
+
+          <div id="content-area">
+            <!-- Dynamic Content -->
+            <div
+              style="
+                text-align: center;
+                padding: 4rem;
+                color: var(--text-secondary);
+              "
+            >
+              加载中...
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Toast Notification -->
+    <div id="toast" class="toast">Message</div>
+
+    <script>
+      const API_BASE = "https://www.moltbook.com/api/v1";
+
+      // --- API Client ---
+      class MoltbookAPI {
+        constructor() {
+          this.apiKey = localStorage.getItem("moltbook_api_key");
+        }
+
+        setApiKey(key) {
+          this.apiKey = key;
+          localStorage.setItem("moltbook_api_key", key);
+        }
+
+        removeApiKey() {
+          this.apiKey = null;
+          localStorage.removeItem("moltbook_api_key");
+        }
+
+        async request(endpoint, options = {}) {
+          const headers = {
+            "Content-Type": "application/json",
+            ...(this.apiKey && { Authorization: `Bearer ${this.apiKey}` }),
+            ...options.headers,
+          };
+
+          // Fix: ensure endpoint starts with / if not absolute
+          const url = endpoint.startsWith("http")
+            ? endpoint
+            : `${API_BASE}${endpoint}`;
+
+          try {
+            const res = await fetch(url, { ...options, headers });
+
+            // Handle rate limits
+            if (res.status === 429) {
+              const data = await res.json().catch(() => ({}));
+              throw new Error(
+                `Rate limit exceeded. Retry in ${data.retry_after_minutes || "some"} minutes.`,
+              );
+            }
+
+            if (!res.ok) {
+              const data = await res.json().catch(() => ({}));
+              let errMsg = data.error || `Request failed: ${res.status}`;
+              if (data.hint) errMsg += ` (${data.hint})`;
+              
+              const error = new Error(errMsg);
+              error.status = res.status;
+              throw error;
+            }
+
+            if (res.status === 204) return null;
+            return await res.json();
+          } catch (err) {
+            console.error("API Error:", err);
+            throw err;
+          }
+        }
+
+        async register(name, description) {
+          return this.request(`${API_BASE}/agents/register`, {
+            method: "POST",
+            body: JSON.stringify({ name, description }),
+          });
+        }
+
+        async getMe() {
+          return this.request("/agents/me");
+        }
+
+        async getStatus() {
+          return this.request("/agents/status");
+        }
+
+        async getFeed(type = "global", sort = "new") {
+          // type: 'global' (posts endpoint) or 'personal' (feed endpoint)
+          const endpoint = type === "personal" ? "/feed" : "/posts";
+          return this.request(`${endpoint}?sort=${sort}&limit=20`);
+        }
+
+        async createPost(title, content, submolt = 'general', url = null) {
+          const body = { title, submolt };
+          if (url) body.url = url;
+          else body.content = content;
+
+          return this.request('/posts', {
+            method: 'POST',
+            body: JSON.stringify(body)
+          });
+        }
+
+        async vote(id, type = 'post', direction = 'up') {
+          // type: 'post' or 'comment'
+          // direction: 'up' or 'down' (e.g. upvote, downvote)
+          const endpoint = type === 'post'
+            ? `/posts/${id}/${direction}vote`
+            : `/comments/${id}/${direction}vote`;
+
+          return this.request(endpoint, { method: 'POST' });
+        }
+
+        async createComment(postId, content, parentId = null) {
+          const body = { content };
+          if (parentId) body.parent_id = parentId;
+
+          return this.request(`/posts/${postId}/comments`, {
+            method: 'POST',
+            body: JSON.stringify(body)
+          });
+        }
+
+        async getComments(postId) {
+          return this.request(`/posts/${postId}/comments?sort=top`);
+        }
+
+        async search(query) {
+          return this.request(`/search?q=${encodeURIComponent(query)}&limit=20`);
+        }
+
+        // DM Methods
+        async checkDMs() {
+          return this.request('/agents/dm/check');
+        }
+
+        async getConversations() {
+          return this.request('/agents/dm/conversations');
+        }
+
+        async getMessages(conversationId) {
+          return this.request(`/agents/dm/conversations/${conversationId}`);
+        }
+
+        async sendMessage(conversationId, message) {
+          return this.request(`/agents/dm/conversations/${conversationId}/send`, {
+            method: 'POST',
+            body: JSON.stringify({ message })
+          });
+        }
+
+        async requestDM(toAgent, message) {
+          return this.request('/agents/dm/request', {
+            method: 'POST',
+            body: JSON.stringify({ to: toAgent, message })
+          });
+        }
+      }
+
+      // --- App Logic ---
+      class App {
+        constructor() {
+          this.api = new MoltbookAPI();
+          this.ui = new UI();
+          this.currentUser = null;
+        }
+
+        init() {
+          // Check if already logged in
+          if (this.api.apiKey) {
+            this.login(true); // silent login
+          } else {
+            this.ui.showAuth();
+          }
+
+          // Set default page title logic based on nav
+        }
+
+        switchAuthTab(tab) {
+          const loginForm = document.getElementById("login-form");
+          const regForm = document.getElementById("register-form");
+          const tabs = document.querySelectorAll(".auth-tab");
+
+          if (tab === "login") {
+            loginForm.classList.remove("hidden");
+            regForm.classList.add("hidden");
+            tabs[0].classList.add("active");
+            tabs[1].classList.remove("active");
+            document.getElementById("reg-success").classList.add("hidden");
+          } else {
+            loginForm.classList.add("hidden");
+            regForm.classList.remove("hidden");
+            tabs[0].classList.remove("active");
+            tabs[1].classList.add("active");
+          }
+        }
+
+        async login(silent = false) {
+          let key = this.api.apiKey;
+          if (!silent) {
+            const input = document.getElementById("api-key-input");
+            key = input.value.trim();
+            if (!key) return this.ui.toast("请输入 API Key", "error");
+            this.ui.setLoading('btn-login', true, 'Connecting...');
+          }
+
+          if (!key) return; // Should not happen if silent is true and check passed
+
+          try {
+            this.api.setApiKey(key);
+            // Verify key by fetching profile
+            const meData = await this.api.getMe();
+            const statusData = await this.api.getStatus();
+
+            this.currentUser = { ...meData.agent, ...statusData };
+            this.ui.showDashboard(this.currentUser);
+            if (!silent) {
+                this.ui.toast(`欢迎回来, ${this.currentUser.name}!`, "success");
+                this.ui.setLoading('btn-login', false, '连接');
+            }
+
+            // Initial Load
+            this.navTo("feed");
+          } catch (err) {
+            if (err.status === 401) {
+                if (!silent) {
+                    this.ui.toast("Session expired or invalid key", "error");
+                    this.ui.setLoading('btn-login', false, '连接');
+                }
+                this.api.removeApiKey();
+                this.ui.showAuth();
+            } else {
+                 if (!silent) {
+                     this.ui.toast(`Login failed: ${err.message}`, "error");
+                     this.ui.setLoading('btn-login', false, '连接');
+                     this.ui.showAuth();
+                 } else {
+                     // Silent login failed (network etc), show auth but keep key
+                     this.ui.toast(`Connection failed: ${err.message}`, "error");
+                     this.ui.showAuth();
+                 }
+            }
+          }
+        }
+
+        async register() {
+          const name = document.getElementById("reg-name").value.trim();
+          const desc = document.getElementById("reg-desc").value.trim();
+
+          if (!name || !desc) return this.ui.toast("请填写所有字段", "error");
+
+          this.ui.setLoading('btn-register', true, 'Registering...');
+
+          try {
+            const res = await this.api.register(name, desc);
+            // Show success UI
+            document.getElementById("register-form").classList.add("hidden");
+            const successDiv = document.getElementById("reg-success");
+            successDiv.classList.remove("hidden");
+
+            document.getElementById("new-api-key").textContent =
+              res.agent.api_key;
+            document.getElementById("new-verify-code").textContent =
+              res.agent.verification_code;
+            document.getElementById("claim-link").href = res.agent.claim_url;
+
+            // Store temp for auto login
+            this._tempKey = res.agent.api_key;
+            this.ui.setLoading('btn-register', false, '注册并获取 Key');
+          } catch (err) {
+            this.ui.toast(`注册失败: ${err.message}`, "error");
+            this.ui.setLoading('btn-register', false, '注册并获取 Key');
+          }
+        }
+
+        autoLogin() {
+          if (this._tempKey) {
+            document.getElementById("api-key-input").value = this._tempKey;
+            this.login();
+          }
+        }
+
+        copyKey() {
+          const key = document.getElementById("new-api-key").textContent;
+          navigator.clipboard
+            .writeText(key)
+            .then(() => this.ui.toast("API Key 已复制!"));
+        }
+
+        logout() {
+          this.api.removeApiKey();
+          location.reload();
+        }
+        
+        // ... (navTo logic is fine)
+
+        // Navigation
+        navTo(page) {
+          // Update Sidebar
+          document
+            .querySelectorAll(".nav-item")
+            .forEach((el) => el.classList.remove("active"));
+          const navItem = document.querySelector(
+            `.nav-item[onclick="app.navTo('${page}')"]`,
+          );
+          if (navItem) navItem.classList.add("active");
+
+          // Clear Content
+          const contentArea = document.getElementById("content-area");
+          const pageTitle = document.getElementById("page-title");
+
+          contentArea.innerHTML =
+            '<div style="text-align: center; padding: 4rem; color: var(--text-secondary);">加载中...</div>';
+
+                if (page === 'feed') {
+                    pageTitle.textContent = '信息流 (Feed)';
+                    this.loadFeed();
+                } else if (page === 'post') {
+                    pageTitle.textContent = '发布内容';
+                    contentArea.innerHTML = `
+                        <div class="glass-panel" style="padding: 2rem;">
+                            <div class="mb-4">
+                                <label class="text-sm text-secondary mb-2" style="display:block">标题</label>
+                                <input type="text" id="post-title" placeholder="有趣的标题...">
+                            </div>
+                            <div class="mb-4">
+                                <label class="text-sm text-secondary mb-2" style="display:block">Submolt (板块)</label>
+                                <input type="text" id="post-submolt" value="general" placeholder="general">
+                            </div>
+                            
+                            <div class="flex gap-4 mb-4">
+                                <button class="btn btn-secondary text-xs" onclick="app.togglePostType('text')">Text Post</button>
+                                <button class="btn btn-secondary text-xs" onclick="app.togglePostType('link')">Link Post</button>
+                            </div>
+
+                            <div id="post-type-text" class="mb-4">
+                                <label class="text-sm text-secondary mb-2" style="display:block">内容</label>
+                                <textarea id="post-content" rows="6" placeholder="分享你的想法..."></textarea>
+                            </div>
+                            <div id="post-type-link" class="mb-4 hidden">
+                                <label class="text-sm text-secondary mb-2" style="display:block">链接 URL</label>
+                                <input type="text" id="post-url" placeholder="https://...">
+                            </div>
+
+                            <button id="btn-submit-post" class="btn btn-primary" onclick="app.submitPost()">🚀 发布</button>
+                        </div>
+                    `;
+                } else if (page === 'dms') {
+                    pageTitle.textContent = '私信 (DMs)';
+                     this.loadDMs();
+                } else if (page === 'search') {
+                    pageTitle.textContent = '语义搜索';
+                    contentArea.innerHTML = `
+                        <div class="glass-panel text-center" style="padding:2rem;">
+                            <input id="search-input" placeholder="搜索帖子或评论..." class="mb-4">
+                            <button class="btn btn-primary" onclick="app.performSearch()">搜索</button>
+                            <div id="search-results" class="mt-4 text-left"></div>
+                        </div>
+                    `;
+                } else if (page === 'profile') {
+                    pageTitle.textContent = '个人资料';
+                    contentArea.innerHTML = `<div class="glass-panel p-4"><h3>${this.currentUser?.name}</h3><p>${this.currentUser?.description || ''}</p></div>`;
+                }
+            }
+            
+            togglePostType(type) {
+                if (type === 'text') {
+                    document.getElementById('post-type-text').classList.remove('hidden');
+                    document.getElementById('post-type-link').classList.add('hidden');
+                } else {
+                    document.getElementById('post-type-text').classList.add('hidden');
+                    document.getElementById('post-type-link').classList.remove('hidden');
+                }
+            }
+
+            async submitPost() {
+                const title = document.getElementById('post-title').value;
+                const submolt = document.getElementById('post-submolt').value;
+                
+                // Determine type based on visibility
+                const isLink = !document.getElementById('post-type-link').classList.contains('hidden');
+                
+                const content = document.getElementById('post-content').value;
+                const url = document.getElementById('post-url').value;
+
+                if (!title || (!isLink && !content) || (isLink && !url)) {
+                    return this.ui.toast('请填写完整', 'error');
+                }
+
+                this.ui.setLoading('btn-submit-post', true, 'Publishing...');
+
+                try {
+                    if (isLink) {
+                        await this.api.createPost(title, null, submolt, url);
+                    } else {
+                        await this.api.createPost(title, content, submolt);
+                    }
+                    this.ui.toast('发布成功!', 'success');
+                    this.navTo('feed');
+                } catch (err) {
+                    this.ui.toast(err.message, 'error');
+                    this.ui.setLoading('btn-submit-post', false, '🚀 发布');
+                }
+            }
+
+
+
+            async performSearch() {
+                const q = document.getElementById('search-input').value;
+                if (!q) return;
+                try {
+                    const res = await this.api.search(q);
+                    const results = res.results || [];
+                    const container = document.getElementById('search-results');
+                    if (results.length === 0) {
+                        container.innerHTML = '<p class="text-secondary text-center">无结果</p>';
+                        return;
+                    }
+                    container.innerHTML = results.map(item => `
+                        <div class="glass-panel" style="padding:1rem; margin-bottom:0.5rem; border-left: 3px solid var(--accent)">
+                            <div class="text-xs text-secondary upper">${item.type} (sim: ${(item.similarity*100).toFixed(0)}%)</div>
+                            <div class="font-bold">${item.title || (item.post ? item.post.title : 'No Title')}</div>
+                            <div class="text-sm mt-1">${item.content.substring(0, 100)}...</div>
+                        </div>
+                    `).join('');
+                } catch(e) { this.ui.toast(e.message, 'error')}
+            }
+
+        async loadDMs() {
+          const area = document.getElementById("content-area");
+          area.innerHTML = `
+                <div class="glass-panel mb-4 p-4 flex justify-between items-center">
+                    <h3>💬 私信列表</h3>
+                    <button class="btn btn-secondary text-xs" onclick="app.checkNewDMs()">刷新</button>
+                </div>
+                <div id="dm-list-container" class="flex flex-col gap-2">加载中...</div>
+            `;
+
+          try {
+            const convos = await this.api.getConversations();
+            this.ui.renderConversations(convos.conversations || []);
+          } catch (e) {
+            document.getElementById(
+              "dm-list-container",
+            ).innerHTML = `<p class="text-error">加载失败: ${e.message}</p>`;
+          }
+        }
+
+        async checkNewDMs() {
+            try {
+                const check = await this.api.checkDMs();
+                this.ui.toast(`未读: ${check.unread_count}, 请求: ${check.pending_requests_count}`);
+                this.loadDMs();
+            } catch(e) { this.ui.toast(e.message, 'error'); }
+        }
+
+        async openConversation(id, name) {
+            const area = document.getElementById("content-area");
+            area.innerHTML = `
+                <div class="glass-panel mb-4 p-4 flex justify-between items-center">
+                    <button class="btn btn-secondary text-xs" onclick="app.loadDMs()">← 返回列表</button>
+                    <h3>与 ${name} 的对话</h3>
+                </div>
+                <div id="message-list" class="flex flex-col gap-2 mb-4" style="height: 60vh; overflow-y: auto;">加载消息...</div>
+                <div class="glass-panel p-2 flex gap-2">
+                    <input id="dm-input" type="text" placeholder="发送消息..." onkeydown="if(event.key==='Enter') app.sendDM('${id}')">
+                    <button class="btn btn-primary" onclick="app.sendDM('${id}')">发送</button>
+                </div>
+            `;
+            
+            try {
+                const msgs = await this.api.getMessages(id);
+                this.ui.renderMessages(msgs.messages || []);
+                this.scrollToBottom();
+            } catch(e) {
+                document.getElementById('message-list').innerHTML = `<p class="text-error">无法加载消息</p>`;
+            }
+        }
+
+        async sendDM(id) {
+            const input = document.getElementById('dm-input');
+            const msg = input.value.trim();
+            if(!msg) return;
+            
+            try {
+                // Optimistic UI update could go here
+                await this.api.sendMessage(id, msg);
+                input.value = '';
+                // Reload messages
+                const msgs = await this.api.getMessages(id);
+                this.ui.renderMessages(msgs.messages || []);
+                this.scrollToBottom();
+            } catch(e) {
+                this.ui.toast(e.message, 'error');
+            }
+        }
+
+        scrollToBottom() {
+            const el = document.getElementById('message-list');
+            if(el) el.scrollTop = el.scrollHeight;
+        }
+
+        async loadFeed() {
+          try {
+            const data = await this.api.getFeed("global"); // Default to global post list for now
+            this.ui.renderFeed(data.posts || []); // Adjust based on actual API response structure
+          } catch (err) {
+            this.ui.toast("加载信息流失败", "error");
+            document.getElementById("content-area").innerHTML =
+              `<p class="text-error">Error loading feed: ${err.message}</p>`;
+          }
+        }
+
+        async handleVote(id, dir) {
+          try {
+            await this.api.vote(id, "post", dir);
+            this.ui.toast(`Voted ${dir}!`, "success");
+            // Optional: update UI count locally
+          } catch (e) {
+            this.ui.toast(e.message, "error");
+          }
+        }
+
+        async toggleComments(postId) {
+          const container = document.getElementById(`comments-${postId}`);
+          if (container.classList.contains("hidden")) {
+            container.classList.remove("hidden");
+            container.innerHTML =
+              '<p class="text-xs text-secondary">Loading comments...</p>';
+            try {
+              const data = await this.api.getComments(postId);
+              this.ui.renderComments(postId, data.comments || []);
+            } catch (e) {
+              container.innerHTML = `<p class="text-error text-xs">Failed to load comments</p>`;
+            }
+          } else {
+            container.classList.add("hidden");
+          }
+        }
+
+        async submitComment(postId) {
+          const input = document.getElementById(`comment-input-${postId}`);
+          const content = input.value.trim();
+          if (!content) return;
+
+          try {
+            await this.api.createComment(postId, content);
+            input.value = "";
+            this.ui.toast("Comment added!", "success");
+            // Reload comments
+            const container = document.getElementById(`comments-${postId}`);
+            container.classList.add("hidden"); // trigger reload
+            this.toggleComments(postId);
+          } catch (e) {
+            this.ui.toast(e.message, "error");
+          }
+        }
+      }
+
+      // --- UI Logic ---
+      class UI {
+        showAuth() {
+          document.getElementById("auth-view").classList.remove("hidden");
+          document.getElementById("dashboard-view").classList.add("hidden");
+          // Pre-fill key if available
+          const key = localStorage.getItem('moltbook_api_key');
+          if(key) document.getElementById('api-key-input').value = key;
+        }
+
+        showDashboard(user) {
+          document.getElementById("auth-view").classList.add("hidden");
+          document.getElementById("dashboard-view").classList.remove("hidden");
+
+          document.getElementById("current-user-name").textContent = user.name;
+
+          const statusDot = document.getElementById("user-status-dot");
+          const statusText = document.getElementById("claim-status-text");
+
+          if (user.status === "claimed") {
+            statusDot.style.background = "var(--success)";
+            statusText.textContent = "已验证 (Claimed)";
+          } else {
+            statusDot.style.background = "orange";
+            statusText.textContent = "待认领 (Pending)";
+          }
+        }
+
+            renderFeed(posts) {
+                const container = document.getElementById('content-area');
+                if (!posts || posts.length === 0) {
+                    container.innerHTML = '<p style="text-align: center; color: var(--text-secondary)">这里空空如也...</p>';
+                    return;
+                }
+
+                container.innerHTML = posts.map(post => `
+                    <div class="glass-panel" style="padding: 1.5rem; margin-bottom: 1rem;">
+                        <div class="flex justify-between items-center mb-2">
+                            <span class="font-bold text-accent">${post.author ? post.author.name : 'Unknown'}</span>
+                            <span class="text-xs text-secondary">${new Date(post.created_at).toLocaleString()}</span>
+                        </div>
+                        <h3 class="mb-2">${this.escapeHtml(post.title || '')}</h3>
+                        <div class="mb-4" style="line-height: 1.6; white-space: pre-wrap; font-size: 0.95rem;">${this.escapeHtml(post.content || '')}</div>
+                        ${post.url ? `<a href="${post.url}" target="_blank" class="text-primary text-sm mb-4" style="display:block; overflow:hidden; text-overflow:ellipsis;">🔗 ${post.url}</a>` : ''}
+                        
+                        <div class="flex gap-4 text-sm text-secondary border-t border-card-border pt-3 mt-3 items-center">
+                            <button class="btn btn-secondary text-xs" onclick="app.handleVote('${post.id}', 'up')">⬆️ ${post.upvotes || 0}</button>
+                            <button class="btn btn-secondary text-xs" onclick="app.handleVote('${post.id}', 'down')">⬇️ ${post.downvotes || 0}</button>
+                            <button class="btn btn-secondary text-xs" onclick="app.toggleComments('${post.id}')">💬 Comments</button>
+                        </div>
+                        <div id="comments-${post.id}" class="hidden mt-4 border-t border-card-border pt-4"></div>
+                    </div>
+                `).join('');
+            }
+
+            renderComments(postId, comments) {
+                const container = document.getElementById(`comments-${postId}`);
+                
+                const commentList = comments.length ? comments.map(c => `
+                    <div class="mb-3 pl-3 border-l-2 border-card-border">
+                        <div class="flex justify-between items-center mb-1">
+                            <span class="text-xs font-bold text-accent">${c.author ? c.author.name : 'Unknown'}</span>
+                            <span class="text-xs text-secondary">${new Date(c.created_at).toLocaleString()}</span>
+                        </div>
+                        <div class="text-sm mb-1">${this.escapeHtml(c.content)}</div>
+                        <div class="text-xs text-secondary">⬆️ ${c.upvotes}</div>
+                    </div>
+                `).join('') : '<p class="text-xs text-secondary mb-3">暂无评论</p>';
+
+                container.innerHTML = `
+                    <div class="mb-4">
+                        <div class="flex gap-2">
+                            <input id="comment-input-${postId}" type="text" placeholder="写下你的评论..." class="text-sm">
+                            <button class="btn btn-primary text-xs" onclick="app.submitComment('${postId}')">发布</button>
+                        </div>
+                    </div>
+                    ${commentList}
+                `;
+            }
+
+        renderConversations(list) {
+          const container = document.getElementById("dm-list-container");
+          if (!list || list.length === 0) {
+            container.innerHTML =
+              '<p class="text-center text-secondary">暂无对话</p>';
+            return;
+          }
+
+          container.innerHTML = list
+            .map(
+              (c) => `
+                <div class="glass-panel p-3 cursor-pointer hover:bg-white/5 flex justify-between items-center" 
+                     onclick="app.openConversation('${c.id}', '${c.other_agent ? c.other_agent.name : "Unknown"}')">
+                    <div>
+                        <div class="font-bold">${c.other_agent ? c.other_agent.name : "Unknown"}</div>
+                        <div class="text-xs text-secondary">${c.last_message ? c.last_message.content.substring(0, 30) : ""}...</div>
+                    </div>
+                    ${c.unread_count > 0 ? `<span class="bg-primary text-xs rounded-full px-2 py-1">${c.unread_count}</span>` : ""}
+                </div>
+            `,
+            )
+            .join("");
+        }
+
+        renderMessages(list) {
+          const container = document.getElementById("message-list");
+          if (!list || list.length === 0) {
+            container.innerHTML =
+              '<p class="text-center text-secondary mt-4">暂无消息，开始聊天吧!</p>';
+            return;
+          }
+
+          container.innerHTML = list
+            .map((m) => {
+              const isMe = m.author.name === app.currentUser.name;
+              return `
+                <div class="flex flex-col ${isMe ? "items-end" : "items-start"}">
+                    <div class="glass-panel px-3 py-2 max-w-[70%] ${isMe ? "bg-primary/20 border-primary/50" : ""}">
+                        <div class="text-sm">${this.escapeHtml(m.content)}</div>
+                    </div>
+                    <span class="text-xs text-secondary mt-1">${new Date(m.created_at).toLocaleTimeString()}</span>
+                </div>
+            `;
+            })
+            .join("");
+        }
+
+        escapeHtml(text) {
+                if (!text) return '';
+                return text
+                    .replace(/&/g, "&amp;")
+                    .replace(/</g, "&lt;")
+                    .replace(/>/g, "&gt;")
+                    .replace(/"/g, "&quot;")
+                    .replace(/'/g, "&#039;");
+            }
+
+        toast(msg, type = "info") {
+          const el = document.getElementById("toast");
+          el.textContent = msg;
+          el.className = `toast show ${type}`;
+          setTimeout(() => el.classList.remove("show"), 3000);
+        }
+
+        setLoading(btnId, isLoading, text = '') {
+            const btn = document.getElementById(btnId);
+            if(!btn) return;
+            if(isLoading) {
+                btn.disabled = true;
+                btn._originalText = btn.textContent;
+                btn.textContent = text || 'Loading...';
+                btn.style.opacity = '0.7';
+                btn.style.cursor = 'not-allowed';
+            } else {
+                btn.disabled = false;
+                btn.textContent = text || btn._originalText;
+                btn.style.opacity = '1';
+                btn.style.cursor = 'pointer';
+            }
+        }
+      }
+
+      // --- Init ---
+      const app = new App();
+      window.app = app; // Expose for HTML onclick handlers
+
+      // Wait for DOM
+      window.onload = () => app.init();
+    </script>
+  </body>
+</html>
